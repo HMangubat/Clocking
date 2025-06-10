@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Event Release Form</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 400px; margin: 2rem auto; }
+  label { display: block; margin-top: 1rem; }
+  input[type=text] { width: 100%; padding: 0.5rem; margin-top: 0.25rem; }
+  button { margin-top: 1rem; padding: 0.5rem 1rem; }
+  .response { margin-top: 1rem; padding: 0.5rem; border: 1px solid #ccc; background: #f9f9f9; }
+</style>
+</head>
+<body>
+
+<h1>Release Event</h1>
+
+<form id="releaseForm">
+  <label for="eventName">Event Name:</label>
+  <input type="text" id="eventName" name="eventName" required />
+
+  <label for="releaseLatDMS">Release Latitude (DMS):</label>
+  <input type="text" id="releaseLatDMS" name="releaseLatDMS" placeholder="e.g. 12°36′15.47″ N" required />
+
+  <label for="releaseLngDMS">Release Longitude (DMS):</label>
+  <input type="text" id="releaseLngDMS" name="releaseLngDMS" placeholder="e.g. 123°45′30.25″ E" required />
+
+  <button type="submit">Submit</button>
+</form>
+
+<div id="response" class="response" style="display:none;"></div>
+
+<script>
+  const form = document.getElementById('releaseForm');
+  const responseDiv = document.getElementById('response');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const data = {
+      eventName: form.eventName.value.trim(),
+      releaseLatDMS: form.releaseLatDMS.value.trim(),
+      releaseLngDMS: form.releaseLngDMS.value.trim()
+    };
+
+    responseDiv.style.display = 'none';
+    responseDiv.textContent = '';
+
+    try {
+      const res = await fetch('/release', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
+
+      const json = await res.json();
+      responseDiv.style.display = 'block';
+      responseDiv.style.borderColor = 'green';
+      responseDiv.textContent = `Success! Event ID: ${json.eventID}, Name: ${json.eventName}, Released at: ${new Date(json.releaseTime).toLocaleString()}`;
+      form.reset();
+    } catch (error) {
+      responseDiv.style.display = 'block';
+      responseDiv.style.borderColor = 'red';
+      responseDiv.textContent = 'Error: ' + error.message;
+    }
+  });
+</script>
+
+</body>
+</html>
+
+

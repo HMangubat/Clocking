@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add User with DMS</title>
+</head>
+<body>
+  <h2>Create User</h2>
+  <form id="userForm">
+    <input name="username" placeholder="Username" required><br>
+    <input name="email" type="email" placeholder="Email" required><br>
+    <input name="latitudeDms" placeholder="Latitude DMS (e.g. 14°33'23.2\"N)" required><br>
+    <input name="longitudeDms" placeholder="Longitude DMS (e.g. 121°2'45.5\"E)" required><br>
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="msg"></p>
+
+  <script>
+    const form = document.getElementById('userForm');
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const body = Object.fromEntries(formData.entries());
+
+      const res = await fetch('/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      const msg = document.getElementById('msg');
+      if (res.ok) {
+        msg.textContent = "User created successfully!";
+        form.reset();
+      } else {
+        const err = await res.text();
+        msg.textContent = "Error: " + err;
+      }
+    });
+  </script>
+</body>
+</html>

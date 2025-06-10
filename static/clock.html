@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clocking Web App</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f9f9f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      background: white;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      border-radius: 12px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      color: #34495e;
+      margin-top: 30px;
+      font-size: 18px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 8px;
+    }
+
+    label {
+      font-weight: 500;
+      display: block;
+      margin-top: 20px;
+    }
+
+    input {
+      padding: 10px;
+      width: 100%;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      background: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #1f6390;
+    }
+
+    .output {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px dashed #ccc;
+      background: #f0f6fc;
+      font-family: monospace;
+      white-space: pre-wrap;
+      border-radius: 6px;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Record Arrival</h2>
+        <label>User ID: <input type="number" id="userID"></label><br>
+        <label>Event ID: <input type="number" id="eventID"></label><br>
+        <button onclick="recordArrival()">Clock</button>
+        <p id="arrivalResult"></p>
+    </div>
+
+  <div class="footer">
+    &copy; 2025 Clocking System
+  </div>
+
+    <script>
+        function recordArrival() {
+        const userID = document.getElementById("userID").value;
+        const eventID = document.getElementById("eventID").value;
+
+        fetch("/arrive", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userID: parseInt(userID), eventID: parseInt(eventID) })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Request failed");
+            return res.json();
+        })
+        .then(data => {
+            document.getElementById("arrivalResult").innerText =
+            `Arrived at: ${data.arrivedAt}
+            Distance: ${data.distanceKm.toFixed(3)} km
+            Speed: ${data.speed.toFixed(3)} m/min`;
+        })
+        .catch(err => {
+            document.getElementById("arrivalResult").innerText = "Error: " + err.message;
+        });
+        }
+    </script>
+
+</body>
+</html>
