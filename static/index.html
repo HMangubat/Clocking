@@ -1,78 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Event Release Form</title>
-<style>
-  body { font-family: Arial, sans-serif; max-width: 400px; margin: 2rem auto; }
-  label { display: block; margin-top: 1rem; }
-  input[type=text] { width: 100%; padding: 0.5rem; margin-top: 0.25rem; }
-  button { margin-top: 1rem; padding: 0.5rem 1rem; }
-  .response { margin-top: 1rem; padding: 0.5rem; border: 1px solid #ccc; background: #f9f9f9; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clocking Web App</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav {
+      background: #2980b9;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    nav a {
+      color: white;
+      margin: 0 10px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      margin-top: 40px;
+    }
+  </style>
 </head>
 <body>
 
-<h1>Release Event</h1>
+  <nav>
+    <strong>Clocking Web App</strong>
+    <div>
+      <a onclick="loadContent('clock.html')">Clocking</a>
+      <a onclick="loadContent('createUser.html')">Create User</a>
+      <a onclick="loadContent('createEvent.html')">Create Event</a>
+    </div>
+  </nav>
 
-<form id="releaseForm">
-  <label for="eventName">Event Name:</label>
-  <input type="text" id="eventName" name="eventName" required />
+  <div id="mainContent">
+    
+  </div>
 
-  <label for="releaseLatDMS">Release Latitude (DMS):</label>
-  <input type="text" id="releaseLatDMS" name="releaseLatDMS" placeholder="e.g. 12°36′15.47″ N" required />
+  <div class="footer">
+    &copy; 2025 Clocking System
+  </div>
 
-  <label for="releaseLngDMS">Release Longitude (DMS):</label>
-  <input type="text" id="releaseLngDMS" name="releaseLngDMS" placeholder="e.g. 123°45′30.25″ E" required />
-
-  <button type="submit">Submit</button>
-</form>
-
-<div id="response" class="response" style="display:none;"></div>
-
-<script>
-  const form = document.getElementById('releaseForm');
-  const responseDiv = document.getElementById('response');
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const data = {
-      eventName: form.eventName.value.trim(),
-      releaseLatDMS: form.releaseLatDMS.value.trim(),
-      releaseLngDMS: form.releaseLngDMS.value.trim()
-    };
-
-    responseDiv.style.display = 'none';
-    responseDiv.textContent = '';
-
-    try {
-      const res = await fetch('/release', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err);
-      }
-
-      const json = await res.json();
-      responseDiv.style.display = 'block';
-      responseDiv.style.borderColor = 'green';
-      responseDiv.textContent = `Success! Event ID: ${json.eventID}, Name: ${json.eventName}, Released at: ${new Date(json.releaseTime).toLocaleString()}`;
-      form.reset();
-    } catch (error) {
-      responseDiv.style.display = 'block';
-      responseDiv.style.borderColor = 'red';
-      responseDiv.textContent = 'Error: ' + error.message;
+  <script>
+    function loadContent(file) {
+      fetch(file)
+        .then(response => {
+          if (!response.ok) throw new Error("Failed to load " + file);
+          return response.text();
+        })
+        .then(html => {
+          document.getElementById("mainContent").innerHTML = html;
+        })
+        .catch(err => {
+          document.getElementById("mainContent").innerHTML = `<p style="color:red;">Error loading content: ${err.message}</p>`;
+        });
     }
-  });
-</script>
+
+
+
+  </script>
+  <script src="/static/assets/main.js"></script>
+
 
 </body>
 </html>
-
-
