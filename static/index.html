@@ -4,58 +4,175 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Clocking Web App</title>
+  <link rel="icon" type="image/png" href="/static/assets/clocking_logo.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f9f9f9;
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
       margin: 0;
       padding: 0;
+      height: 100%;
+      font-family: "Segoe UI", sans-serif;
+      background: #f9f9f9;
     }
 
-    nav {
+    .containers {
+      display: flex;
+      height: 100vh;
+      flex-direction: row;
+    }
+
+    .sidebar {
+      width: 240px;
       background: #2980b9;
       color: white;
-      padding: 15px;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 10px;
+      position: relative;
+      transition: transform 0.3s ease;
+      z-index: 1000;
     }
 
-    nav a {
+    .sidebar.collapsed {
+      transform: translateX(-100%);
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+    }
+
+    .sidebar img {
+      width: 100px;
+      margin-bottom: 10px;
+    }
+
+    .sidebar strong {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .sidebar a {
       color: white;
-      margin: 0 10px;
-      cursor: pointer;
       text-decoration: none;
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 4px;
+      width: 100%;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .sidebar a i {
+      margin-right: 10px;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #1b4f72;
+    }
+
+    .sidebar .bottom-links {
+      margin-top: auto;
+      width: 100%;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .topnav {
+      height: 50px;
+      background: #2980b9;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      color: white;
+      font-size: 18px;
+    }
+
+    .burger {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      margin-right: 15px;
+      margin-top: 0px;
+      cursor: pointer;
+    }
+
+    #mainContent {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
     }
 
     .footer {
       text-align: center;
       font-size: 13px;
       color: #888;
-      margin-top: 40px;
+      padding: 10px;
+      background: #f1f1f1;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: absolute;
+        height: 100%;
+        left: 0;
+        top: 0;
+      }
     }
   </style>
 </head>
 <body>
 
-  <nav>
-    <strong>Clocking Web App</strong>
-    <div>
-      <a onclick="loadContent('clock.html')">Clocking</a>
-      <a onclick="loadContent('createUser.html')">Create User</a>
-      <a onclick="loadContent('createEvent.html')">Create Event</a>
+  <div class="containers">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <img src="/static/assets/clocking_logo.png" alt="Fast Clocking Logo" />
+      <strong>Clocking Web App</strong>
+
+      <a onclick="loadContent('dashboard.html', this)" class="active"><i class="fas fa-house"></i> Dashboard</a>
+      <a onclick="loadContent('clock.html', this)"><i class="fas fa-clock"></i> Clocking</a>
+      <a onclick="loadContent('createUser.html', this)"><i class="fas fa-user-plus"></i> Create User</a>
+      <a onclick="loadContent('createEvent.html', this)"><i class="fas fa-calendar-plus"></i> Create Event</a>
+
+      <div class="bottom-links">
+        <a onclick="loadContent('profile.html', this)"><i class="fas fa-user"></i> Profile</a>
+        <a onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </div>
     </div>
-  </nav>
 
-  <div id="mainContent">
-    
-  </div>
+    <!-- Main Content -->
+    <div class="main">
+      <!-- Top Navbar -->
+      <div class="topnav">
+        <button class="burger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        Clocking Web App
+      </div>
 
-  <div class="footer">
-    &copy; 2025 Clocking System
+      <div id="mainContent">
+        <!-- Dynamic content appears here -->
+      </div>
+
+      <div class="footer">&copy; 2025 Clocking System</div>
+    </div>
   </div>
 
   <script>
-    function loadContent(file) {
+    function loadContent(file, element) {
       fetch(file)
         .then(response => {
           if (!response.ok) throw new Error("Failed to load " + file);
@@ -63,17 +180,45 @@
         })
         .then(html => {
           document.getElementById("mainContent").innerHTML = html;
+          setActiveLink(element);
+          if (window.innerWidth <= 768) toggleSidebar(true); // Auto-close sidebar on mobile
         })
         .catch(err => {
-          document.getElementById("mainContent").innerHTML = `<p style="color:red;">Error loading content: ${err.message}</p>`;
+          document.getElementById("mainContent").innerHTML =
+            `<p style="color:red;">Error loading content: ${err.message}</p>`;
         });
     }
 
+    function setActiveLink(clickedLink) {
+      const links = document.querySelectorAll(".sidebar a");
+      links.forEach(link => link.classList.remove("active"));
+      if (clickedLink) clickedLink.classList.add("active");
+    }
 
+    function toggleSidebar(forceClose = false) {
+      const sidebar = document.getElementById("sidebar");
+      if (forceClose) {
+        sidebar.classList.add("collapsed");
+      } else {
+        sidebar.classList.toggle("collapsed");
+      }
+    }
 
+    function logout() {
+      alert("Logging out...");
+      // Add actual logout logic here
+    }
+
+    // Auto-load default page
+    window.addEventListener("DOMContentLoaded", () => {
+      const defaultLink = document.querySelector(".sidebar a.active");
+      if (defaultLink) {
+        const firstPage = defaultLink.getAttribute("onclick").match(/'([^']+)'/)[1];
+        loadContent(firstPage, defaultLink);
+      }
+    });
   </script>
+
   <script src="/static/assets/main.js"></script>
-
-
 </body>
 </html>
