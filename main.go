@@ -12,19 +12,19 @@ func main() {
 	db := config.InitDB()
 	defer db.Close()
 
+	http.HandleFunc("/login", handlers.LoginHandler(db))
+	http.HandleFunc("/logout", handlers.LogoutHandler())
+	http.HandleFunc("/me", handlers.MeHandler(db))
 	http.HandleFunc("/users", handlers.CreateUserHandler(db))
 	http.HandleFunc("/release", handlers.HandleRelease(db))
 	http.HandleFunc("/arrive", handlers.HandleArrival(db))
+
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-
 
 	log.Println("✅ Server running at http://localhost:8085")
 	log.Fatal(http.ListenAndServe(":8085", nil))
 }
-
-
-
 
 // package main
 
@@ -55,7 +55,6 @@ func main() {
 // 	Longitude     float64 `json:"longitude"`
 // 	CreatedAt     string  `json:"createdAt"`
 // }
-
 
 // func main() {
 //     var err error
@@ -108,7 +107,6 @@ func main() {
 // 	json.NewEncoder(w).Encode(map[string]string{"message": "User created successfully"})
 // }
 
-
 // func handleRelease(w http.ResponseWriter, r *http.Request) {
 // 	type ReleaseRequest struct {
 // 		EventName     string `json:"eventName"`
@@ -151,7 +149,7 @@ func main() {
 // 	// Insert into DB
 // 	var eventID int
 // 	err = db.QueryRow(
-// 		`INSERT INTO events (eventName, releaseTime, releaseLat, releaseLng, releaseLatDMS, releaseLngDMS) 
+// 		`INSERT INTO events (eventName, releaseTime, releaseLat, releaseLng, releaseLatDMS, releaseLngDMS)
 // 		 VALUES ($1, $2, $3, $4, $5, $6) RETURNING eventID`,
 // 		req.EventName, now, lat, lng, req.ReleaseLatDMS, req.ReleaseLngDMS).Scan(&eventID)
 
@@ -271,7 +269,6 @@ func main() {
 // 		"speed":      roundTo3Decimals(speed), // m/min
 // 	}
 
-
 // 	w.Header().Set("Content-Type", "application/json")
 // 	json.NewEncoder(w).Encode(resp)
 // }
@@ -296,42 +293,6 @@ func main() {
 // 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 // 	return R * c
 // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // package main
 
