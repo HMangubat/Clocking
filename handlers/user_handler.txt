@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -16,40 +17,66 @@ import (
 func CreateUserHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var u models.User
+
+		// Decode JSON body
 		if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			log.Println("[ERROR] Invalid JSON:", err)
 			return
 		}
+		log.Printf("[DEBUG] Decoded user struct: %+v\n", u)
+
+		var data map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&data)
+		log.Printf("[DEBUG] Raw JSON input: %+v\n", data)
+
+
+		log.Printf("[INFO] Creating user: %s (%s %s %s)\n", u.Username, u.Firstname, u.Middlename, u.Lastname)
+
+		// Parse coordinates
 		lat, err := utils.ParseDMS(u.LatitudeDMS)
 		if err != nil {
 			http.Error(w, "Invalid latitude format", http.StatusBadRequest)
-			return
-		}
-		lng, err := utils.ParseDMS(u.LongitudeDMS)
-		if err != nil {
-			http.Error(w, "Invalid longitude format", http.StatusBadRequest)
-			return
-		}
-		hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
-		if err != nil {
-			http.Error(w, "Password hash failed", http.StatusInternalServerError)
+			log.Println("[ERROR] Invalid latitude:", err)
 			return
 		}
 
-		_, err = db.Exec(`
-            INSERT INTO users (username, email, latitude_dms, longitude_dms, latitude, longitude, password_hash)
-            VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-			u.Username, u.Email, u.LatitudeDMS, u.LongitudeDMS, lat, lng, hash,
-		)
+		lng, err := utils.ParseDMS(u.LongitudeDMS)
 		if err != nil {
-			http.Error(w, "Registration failed", http.StatusInternalServerError)
+			http.Error(w, "Invalid longitude format", http.StatusBadRequest)
+			log.Println("[ERROR] Invalid longitude:", err)
 			return
 		}
+
+		// Hash password
+		hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+		if err != nil {
+			http.Error(w, "Password hash failed", http.StatusInternalServerError)
+			log.Println("[ERROR] Password hash failed:", err)
+			return
+		}
+
+		// Insert user into database
+		_, err = db.Exec(`
+			INSERT INTO users 
+				(username, email, password_hash, firstname, middlename, lastname, latitude_dms, longitude_dms, latitude, longitude)
+			VALUES 
+				($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		`, u.Username, u.Email, hash, u.Firstname, u.Middlename, u.Lastname, u.LatitudeDMS, u.LongitudeDMS, lat, lng)
+
+		if err != nil {
+			http.Error(w, "Registration failed", http.StatusInternalServerError)
+			log.Println("[ERROR] Database insert failed:", err)
+			return
+		}
+
+		log.Printf("[INFO] User created successfully: %s\n", u.Username)
 
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(map[string]string{"message": "User registered"})
 	}
 }
+
 
 // Login user and set session cookie
 func LoginHandler(db *sql.DB) http.HandlerFunc {
@@ -113,7 +140,7 @@ func MeHandler(db *sql.DB) http.HandlerFunc {
 			Username string `json:"username"`
 			Email    string `json:"email"`
 		}
-		err = db.QueryRow("SELECT username, email FROM users WHERE id=$1", id).
+		err = db.QueryRow("SELECT username,firstname, middlename, lastname, email FROM users WHERE id=$1", id).
 			Scan(&u.Username, &u.Email)
 		if err != nil {
 			http.Error(w, "User not found", http.StatusNotFound)

@@ -1,286 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <title>Create User - Clocking App</title>
-  <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f9f9f9;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
+  <head>
+    <title>Create User - Clocking App</title>
+    <link rel="icon" type="image/png" href="/static/assets/clocking_logo.png" />
+  </head>
+  <body>
+    <div class="container">
+      <h2>Create User</h2>
 
-    .container {
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 30px;
-      background: white;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-      border-radius: 12px;
-    }
+      <label
+        >Username:
+        <input type="text" id="username" required />
+      </label>
 
-    h2 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 30px;
-    }
+      <label
+        >Email:
+        <input type="email" id="email" required />
+      </label>
 
-    label {
-      font-weight: 500;
-      display: block;
-      margin-top: 20px;
-    }
+      <label
+        >Password:
+        <input type="password" id="password" required />
+      </label>
 
-    input {
-      padding: 10px;
-      width: 100%;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
+      <label
+        >First Name:
+        <input type="text" id="firstname" required />
+      </label>
 
-    button {
-      margin-top: 20px;
-      padding: 12px 20px;
-      background: #2980b9;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background 0.3s ease;
-    }
+      <label
+        >Middle Name:
+        <input type="text" id="middlename" required />
+      </label>
 
-    button:hover {
-      background: #1f6390;
-    }
+      <label
+        >Last Name:
+        <input type="text" id="lastname" required />
+      </label>
 
-    #msg {
-      margin-top: 20px;
-      font-weight: 500;
-      text-align: center;
-    }
+      <label
+        >Latitude (DMS):
+        <input
+          type="text"
+          id="latitudeDms"
+          placeholder="e.g. 12°36′15.47″ N"
+          required
+        />
+      </label>
 
-    #msg.success {
-      color: green;
-    }
+      <label
+        >Longitude (DMS):
+        <input
+          type="text"
+          id="longitudeDms"
+          placeholder="e.g. 123°45′30.25″ E"
+          required
+        />
+      </label>
 
-    #msg.error {
-      color: red;
-    }
-  </style>
-</head>
-<body>
+      <button onclick="createUser()">Submit</button>
 
-  <div class="container">
-    <h2>Create User</h2>
-
-    <label>Username:
-      <input type="text" id="username" required>
-    </label>
-
-    <label>Email:
-      <input type="email" id="email" required>
-    </label>
-
-    <label>Password:
-      <input type="password" id="password" required>
-    </label>
-
-    <label>Latitude (DMS):
-      <input type="text" id="latitudeDms" placeholder="e.g. 12°36′15.47″ N" required>
-    </label>
-
-    <label>Longitude (DMS):
-      <input type="text" id="longitudeDms" placeholder="e.g. 123°45′30.25″ E" required>
-    </label>
-
-    <button onclick="createUser()">Submit</button>
-
-    <p id="msg"></p>
-  </div>
-
-  <script>
-    async function createUser() {
-      const username = document.getElementById("username").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const latitudeDms = document.getElementById("latitudeDms").value.trim();
-      const longitudeDms = document.getElementById("longitudeDms").value.trim();
-      const msg = document.getElementById("msg");
-
-      msg.className = "";
-      msg.innerText = "";
-
-      if (!username || !email || !password || !latitudeDms || !longitudeDms) {
-        msg.innerText = "Please fill in all fields.";
-        msg.className = "error";
-        return;
-      }
-
-      try {
-        const response = await fetch("/users", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, email, password, latitudeDms, longitudeDms })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || "Failed to create user.");
-        }
-
-        msg.innerText = "User created successfully!";
-        msg.className = "success";
-
-        // Clear inputs
-        document.getElementById("username").value = "";
-        document.getElementById("email").value = "";
-        document.getElementById("password").value = "";
-        document.getElementById("latitudeDms").value = "";
-        document.getElementById("longitudeDms").value = "";
-
-      } catch (err) {
-        msg.innerText = "Error: " + err.message;
-        msg.className = "error";
-      }
-    }
-  </script>
-</body>
+      <p id="msg"></p>
+    </div>
+  </body>
 </html>
-
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Add User with DMS</title>
-<style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f9f9f9;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 30px;
-      background: white;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-      border-radius: 12px;
-    }
-
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 30px;
-    }
-
-    h2 {
-      color: #34495e;
-      margin-top: 30px;
-      font-size: 18px;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 8px;
-    }
-
-    label {
-      font-weight: 500;
-      display: block;
-      margin-top: 20px;
-    }
-
-    input {
-      padding: 10px;
-      width: 100%;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-
-    button {
-      margin-top: 20px;
-      padding: 12px 20px;
-      background: #2980b9;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background 0.3s ease;
-    }
-
-    button:hover {
-      background: #1f6390;
-    }
-
-    .output {
-      margin-top: 20px;
-      padding: 15px;
-      border: 1px dashed #ccc;
-      background: #f0f6fc;
-      font-family: monospace;
-      white-space: pre-wrap;
-      border-radius: 6px;
-    }
-
-    .footer {
-      text-align: center;
-      font-size: 13px;
-      color: #888;
-      margin-top: 40px;
-    }
-  </style>
-</head>
-<body>
-
-
-
-
-  <div class="container">
-  <h2>Create User</h2>
-  <label>Username: <input type="text" id="username" required></label><br>
-  <label>Email: <input type="email" id="email" required></label><br>
-  <label>Latitude (DMS): <input type="text" id="latitudeDms" placeholder="e.g. 12°36′15.47″ N" required></label><br>
-  <label>Longitude (DMS): <input type="text" id="longitudeDms" placeholder="e.g. 123°45′30.25″ E" required></label><br>
-  <button onclick="createUser()">Submit</button>
-  <p id="msg"></p>
-</div>
-
-<script>
-  function createUser() {
-    const username = document.getElementById("username").value;
-    const email = document.getElementById("email").value;
-    const latitudeDms = document.getElementById("latitudeDms").value;
-    const longitudeDms = document.getElementById("longitudeDms").value;
-
-    fetch("/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, latitudeDms, longitudeDms })
-    })
-    .then(res => {
-      if (!res.ok) throw new Error("Request failed");
-      return res.text(); // assuming plain response
-    })
-    .then(response => {
-      document.getElementById("msg").innerText = "User created successfully!";
-      document.getElementById("username").value = "";
-      document.getElementById("email").value = "";
-      document.getElementById("latitudeDms").value = "";
-      document.getElementById("longitudeDms").value = "";
-    })
-    .catch(err => {
-      document.getElementById("msg").innerText = "Error: " + err.message;
-    });
-  }
-</script>
-</body>
-</html> -->

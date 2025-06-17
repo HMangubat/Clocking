@@ -1,154 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Clocking Web App</title>
-  <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f9f9f9;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clocking Web App</title>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🕒 Clocking Web App</h1>
 
-    .container {
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 30px;
-      background: white;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-      border-radius: 12px;
-    }
+      <h2>1. Release Time</h2>
+      <button onclick="releaseTime()">📤 Record Release</button>
+      <div class="output" id="releaseDisplay">No release recorded yet.</div>
 
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 30px;
-    }
+      <h2>2. Arrival Time & Speed</h2>
+      <label for="arrivalId">Release ID:</label>
+      <input id="arrivalId" type="number" placeholder="Enter release ID..." />
 
-    h2 {
-      color: #34495e;
-      margin-top: 30px;
-      font-size: 18px;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 8px;
-    }
+      <label for="distance">Distance (kilometers):</label>
+      <input
+        id="distance"
+        type="number"
+        placeholder="Enter distance in km..."
+      />
 
-    label {
-      font-weight: 500;
-      display: block;
-      margin-top: 20px;
-    }
+      <button onclick="arrival()">📥 Record Arrival</button>
+      <div class="output" id="arrivalDisplay">No arrival recorded yet.</div>
+    </div>
 
-    input {
-      padding: 10px;
-      width: 100%;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-
-    button {
-      margin-top: 20px;
-      padding: 12px 20px;
-      background: #2980b9;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background 0.3s ease;
-    }
-
-    button:hover {
-      background: #1f6390;
-    }
-
-    .output {
-      margin-top: 20px;
-      padding: 15px;
-      border: 1px dashed #ccc;
-      background: #f0f6fc;
-      font-family: monospace;
-      white-space: pre-wrap;
-      border-radius: 6px;
-    }
-
-    .footer {
-      text-align: center;
-      font-size: 13px;
-      color: #888;
-      margin-top: 40px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🕒 Clocking Web App</h1>
-
-    <h2>1. Release Time</h2>
-    <button onclick="releaseTime()">📤 Record Release</button>
-    <div class="output" id="releaseDisplay">No release recorded yet.</div>
-
-    <h2>2. Arrival Time & Speed</h2>
-    <label for="arrivalId">Release ID:</label>
-    <input id="arrivalId" type="number" placeholder="Enter release ID..." />
-
-    <label for="distance">Distance (kilometers):</label>
-    <input id="distance" type="number" placeholder="Enter distance in km..." />
-
-
-    <button onclick="arrival()">📥 Record Arrival</button>
-    <div class="output" id="arrivalDisplay">No arrival recorded yet.</div>
-  </div>
-
-  <div class="footer">
-    &copy; 2025 Clocking System
-  </div>
-
-  <script>
-
-    
-    async function releaseTime() {
-      const res = await fetch("/release", { method: "POST" });
-      const data = await res.json();
-
-      document.getElementById("releaseDisplay").innerText =
-        `✅ Release ID: ${data.id}\nTime: ${new Date(data.release_time).toLocaleString()}`;
-      document.getElementById("arrivalId").value = data.id;
-    }
-
-    async function arrival() {
-      const id = document.getElementById("arrivalId").value;
-      const distance = document.getElementById("distance").value;
-      const output = document.getElementById("arrivalDisplay");
-
-      const res = await fetch("/arrival", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: parseInt(id), distance: parseFloat(distance) }) // distance in km
-      });
-
-      if (!res.ok) {
-        const errText = await res.text();
-        output.innerText = `❌ Error: ${errText}`;
-        return;
-      }
-
-      const data = await res.json();
-      output.innerText =
-        `✅ Arrival Recorded:\n` +
-        `Release Time: ${new Date(data.release_time).toLocaleString()}\n` +
-        `Arrival Time: ${new Date(data.arrival_time).toLocaleString()}\n\n` +
-        `Distance: ${data.distance_km} km \n` +
-        `Flying Time: ${Math.floor(data.time_seconds)} seconds\n` +
-        `Speed: ${data.speed_m_per_60th.toFixed(3)} (m/min)`;
-    }
-  </script>
-
-</body>
+    <div class="footer">&copy; 2025 Clocking System</div>
+  </body>
 </html>
